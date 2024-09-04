@@ -104,10 +104,28 @@ class _GamePageState extends State<GamePage> {
     // Implement food drawing logic here
   }
 
-  List<Piece> getPieces() {
-    // Implement piece creation logic here
-    return [];
-  }
+   List<Piece> getPieces() {
+    final pieces = <Piece>[];
+    draw();
+    drawFood();
+
+    for (var i = 0; i < length; ++i) {
+      if (i >= positions.length) {
+        continue;
+      }
+      pieces.add(
+        Piece(
+          posX: positions[i].dx.toInt(),
+          posY: positions[i].dy.toInt(),
+          size: step,
+          color: Colors.red,
+        ),
+      );
+    }
+
+    return pieces;
+}
+
 
   Widget getControls() {
     // Implement game controls UI here
@@ -162,20 +180,16 @@ class _GamePageState extends State<GamePage> {
 
   @override
   Widget build(BuildContext context) {
-    screenWidth = MediaQuery.of(context).size.width;
-    screenHeight = MediaQuery.of(context).size.height;
-
     lowerBoundX = step;
     lowerBoundY = step;
-    upperBoundX = roundToNearestTens(screenWidth.toInt() - step);
-    upperBoundY = roundToNearestTens(screenHeight.toInt() - step);
-
+    upperBoundX = roundToNearestTens(MediaQuery.of(context).size.width.toInt() - step);
+    upperBoundY = roundToNearestTens(MediaQuery.of(context).size.height.toInt() - step);
     return Scaffold(
       body: Container(
         color: Color(0XFFF5BB00),
         child: Stack(
           children: [
-            // Add widgets and game components here
+            
           ],
         ),
       ),
