@@ -23,12 +23,12 @@ class _GamePageState extends State<GamePage> {
   late double screenHeight;
   late int lowerBoundX, upperBoundX, lowerBoundY, upperBoundY;
 
-  Timer? timer;  // Nullable Timer
+  Timer? timer; // Nullable Timer
   double speed = 1;
 
   int score = 0;
 
-    void draw() async {
+  void draw() async {
     if (positions.length == 0) {
       positions.add(getRandomPositionWithinRange());
     }
@@ -40,7 +40,6 @@ class _GamePageState extends State<GamePage> {
     }
     positions[0] = await getNextPosition(positions[0]);
   }
-
 
   Direction getRandomDirection([DirectionType? type]) {
     if (type == DirectionType.horizontal) {
@@ -58,7 +57,8 @@ class _GamePageState extends State<GamePage> {
   Offset getRandomPositionWithinRange() {
     int posX = Random().nextInt(upperBoundX) + lowerBoundX;
     int posY = Random().nextInt(upperBoundY) + lowerBoundY;
-    return Offset(roundToNearestTens(posX).toDouble(), roundToNearestTens(posY).toDouble());
+    return Offset(roundToNearestTens(posX).toDouble(),
+        roundToNearestTens(posY).toDouble());
   }
 
   bool detectCollision(Offset position) {
@@ -96,7 +96,8 @@ class _GamePageState extends State<GamePage> {
               },
               child: Text(
                 "Restart",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -106,15 +107,26 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<Offset> getNextPosition(Offset position) async {
-    // Implement next position logic here
-    return position;
+    Offset? nextPosition;
+
+    if (direction == Direction.right) {
+      nextPosition = Offset(position.dx + step, position.dy);
+    } else if (direction == Direction.left) {
+      nextPosition = Offset(position.dx - step, position.dy);
+    } else if (direction == Direction.up) {
+      nextPosition = Offset(position.dx, position.dy - step);
+    } else if (direction == Direction.down) {
+      nextPosition = Offset(position.dx, position.dy + step);
+    }
+
+    return nextPosition!;
   }
 
   void drawFood() {
     // Implement food drawing logic here
   }
 
-   List<Piece> getPieces() {
+  List<Piece> getPieces() {
     final pieces = <Piece>[];
     draw();
     drawFood();
@@ -134,8 +146,7 @@ class _GamePageState extends State<GamePage> {
     }
 
     return pieces;
-}
-
+  }
 
   Widget getControls() {
     // Implement game controls UI here
@@ -192,17 +203,22 @@ class _GamePageState extends State<GamePage> {
   Widget build(BuildContext context) {
     lowerBoundX = step;
     lowerBoundY = step;
-    upperBoundX = roundToNearestTens(MediaQuery.of(context).size.width.toInt() - step);
-    upperBoundY = roundToNearestTens(MediaQuery.of(context).size.height.toInt() - step);
+    upperBoundX =
+        roundToNearestTens(MediaQuery.of(context).size.width.toInt() - step);
+    upperBoundY =
+        roundToNearestTens(MediaQuery.of(context).size.height.toInt() - step);
     return Scaffold(
       body: Container(
         color: Color(0XFFF5BB00),
         child: Stack(
           children: [
-            
+            Stack(
+              children: getPieces(),
+            ),
           ],
         ),
       ),
     );
+
   }
 }
