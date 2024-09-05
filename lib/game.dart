@@ -28,9 +28,19 @@ class _GamePageState extends State<GamePage> {
 
   int score = 0;
 
-  void draw() async {
-    // Implement draw logic here
+    void draw() async {
+    if (positions.length == 0) {
+      positions.add(getRandomPositionWithinRange());
+    }
+    while (length > positions.length) {
+      positions.add(positions[positions.length - 1]);
+    }
+    for (var i = positions.length - 1; i > 0; i--) {
+      positions[i] = positions[i - 1];
+    }
+    positions[0] = await getNextPosition(positions[0]);
   }
+
 
   Direction getRandomDirection([DirectionType? type]) {
     if (type == DirectionType.horizontal) {
@@ -109,7 +119,7 @@ class _GamePageState extends State<GamePage> {
     draw();
     drawFood();
 
-    for (var i = 0; i < length; ++i) {
+    for (var i = 0; i < length; i++) {
       if (i >= positions.length) {
         continue;
       }
