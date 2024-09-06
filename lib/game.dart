@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_snake_game/direction_type.dart';
 import 'direction.dart';
 import 'piece.dart';
+import 'control_panel.dart';
 
 class GamePage extends StatefulWidget {
   @override
@@ -149,8 +150,13 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget getControls() {
-    // Implement game controls UI here
-    return Container();
+    return ControlPanel(
+      // 1
+      onTapped: (Direction newDirection) {
+        // 2
+        direction = newDirection; // 3
+      },
+    );
   }
 
   int roundToNearestTens(int num) {
@@ -163,7 +169,11 @@ class _GamePageState extends State<GamePage> {
   }
 
   void changeSpeed() {
-    // Implement speed change logic here
+    if (timer != null && timer!.isActive) timer!.cancel();
+
+    timer = Timer.periodic(Duration(milliseconds: 200 ~/ speed), (timer) {
+      setState(() {});
+    });
   }
 
   Widget getScore() {
@@ -172,7 +182,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   void restart() {
-    // Implement game restart logic here
+    changeSpeed();
   }
 
   Widget getPlayAreaBorder() {
@@ -215,10 +225,10 @@ class _GamePageState extends State<GamePage> {
             Stack(
               children: getPieces(),
             ),
+            getControls(),
           ],
         ),
       ),
     );
-
   }
 }
