@@ -18,7 +18,7 @@ class _GamePageState extends State<GamePage> {
   Direction direction = Direction.right;
 
   late Piece food;
-  late Offset foodPosition;
+  Offset? foodPosition;
 
   late double screenWidth;
   late double screenHeight;
@@ -63,7 +63,16 @@ class _GamePageState extends State<GamePage> {
   }
 
   bool detectCollision(Offset position) {
-    // Implement collision detection logic
+    if (position.dx >= upperBoundX && direction == Direction.right) {
+      return true;
+    } else if (position.dx <= lowerBoundX && direction == Direction.left) {
+      return true;
+    } else if (position.dy >= upperBoundY && direction == Direction.down) {
+      return true;
+    } else if (position.dy <= lowerBoundY && direction == Direction.up) {
+      return true;
+    }
+
     return false;
   }
 
@@ -110,6 +119,13 @@ class _GamePageState extends State<GamePage> {
   Future<Offset> getNextPosition(Offset position) async {
     Offset? nextPosition;
 
+    if (detectCollision(position) == true) {
+      if (timer != null && timer!.isActive) timer!.cancel();
+      await Future.delayed(
+          Duration(milliseconds: 500), () => showGameOverDialog());
+      return position;
+    }
+
     if (direction == Direction.right) {
       nextPosition = Offset(position.dx + step, position.dy);
     } else if (direction == Direction.left) {
@@ -124,7 +140,26 @@ class _GamePageState extends State<GamePage> {
   }
 
   void drawFood() {
-    // Implement food drawing logic here
+    if (foodPosition == null) {
+      foodPosition = getRandomPositionWithinRange();
+    }
+
+    if (foodPosition == positions[0]) {
+      length++;
+      speed = speed + 0.25;
+      score = score + 5;
+      changeSpeed();
+
+      foodPosition = getRandomPositionWithinRange();
+    }
+
+    food = Piece(
+      posX: foodPosition!.dx.toInt(),
+      posY: foodPosition!.dy.toInt(),
+      size: step,
+      color: Color(0XFF8EA604),
+      isAnimated: true,
+    );
   }
 
   List<Piece> getPieces() {
@@ -177,11 +212,23 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget getScore() {
-    // Implement score display here
-    return Container();
+    return Positioned(
+      top: 50.0,
+      right: 40.0,
+      child: Text(
+        "Score: " + score.toString(),
+        style: TextStyle(fontSize: 24.0),
+      ),
+    );
   }
 
   void restart() {
+    score = 0;
+    length = 5;
+    positions = [];
+    direction = getRandomDirection();
+    speed = 1;
+
     changeSpeed();
   }
 
@@ -222,10 +269,13 @@ class _GamePageState extends State<GamePage> {
         color: Color(0XFFF5BB00),
         child: Stack(
           children: [
+            getPlayAreaBorder(),
             Stack(
               children: getPieces(),
             ),
             getControls(),
+            food,
+            getScore(),
           ],
         ),
       ),
