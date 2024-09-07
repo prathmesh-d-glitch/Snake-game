@@ -150,7 +150,7 @@ class _GamePageState extends State<GamePage> {
       posX: foodPosition!.dx.toInt(),
       posY: foodPosition!.dy.toInt(),
       size: step,
-      color: Color(0XFF8EA604),
+      color: const Color.fromARGB(255, 191, 32, 20),
       isAnimated: true,
     );
   }
@@ -169,7 +169,7 @@ class _GamePageState extends State<GamePage> {
           posX: positions[i].dx.toInt(),
           posY: positions[i].dy.toInt(),
           size: step,
-          color: Colors.red,
+          color: const Color.fromARGB(255, 31, 166, 4),
         ),
       );
     }
@@ -271,7 +271,7 @@ class _GamePageState extends State<GamePage> {
         roundToNearestTens(MediaQuery.of(context).size.height.toInt() - step);
     return Scaffold(
       body: Container(
-        color: Color(0XFFF5BB00),
+        color: Color.fromARGB(255, 0, 0, 0),
         child: Stack(
           children: [
             getPlayAreaBorder(),
