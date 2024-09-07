@@ -24,13 +24,13 @@ class _GamePageState extends State<GamePage> {
   late double screenHeight;
   late int lowerBoundX, upperBoundX, lowerBoundY, upperBoundY;
 
-  Timer? timer; // Nullable Timer
+  Timer? timer;
   double speed = 1;
 
   int score = 0;
 
   void draw() async {
-    if (positions.length == 0) {
+    if (positions.isEmpty) {
       positions.add(getRandomPositionWithinRange());
     }
     while (length > positions.length) {
@@ -39,41 +39,58 @@ class _GamePageState extends State<GamePage> {
     for (var i = positions.length - 1; i > 0; i--) {
       positions[i] = positions[i - 1];
     }
+
+    // Update snake's head position and check for self-collision
     positions[0] = await getNextPosition(positions[0]);
+
+    if (detectSelfCollision()) {
+      if (timer != null && timer!.isActive) timer!.cancel();
+      await Future.delayed(Duration(milliseconds: 500), () => showGameOverDialog());
+    }
   }
 
-  Direction getRandomDirection([DirectionType? type]) {
-    if (type == DirectionType.horizontal) {
-      bool random = Random().nextBool();
-      return random ? Direction.right : Direction.left;
-    } else if (type == DirectionType.vertical) {
-      bool random = Random().nextBool();
-      return random ? Direction.up : Direction.down;
-    } else {
-      int random = Random().nextInt(4);
-      return Direction.values[random];
+  bool detectSelfCollision() {
+    for (int i = 1; i < positions.length; i++) {
+      if (positions[i] == positions[0]) {
+        return true;
+      }
     }
+    return false;
+  }
+
+  Offset getNextPosition(Offset position) {
+    Offset? nextPosition;
+
+    // Move in the current direction
+    if (direction == Direction.right) {
+      nextPosition = Offset(position.dx + step, position.dy);
+    } else if (direction == Direction.left) {
+      nextPosition = Offset(position.dx - step, position.dy);
+    } else if (direction == Direction.up) {
+      nextPosition = Offset(position.dx, position.dy - step);
+    } else if (direction == Direction.down) {
+      nextPosition = Offset(position.dx, position.dy + step);
+    }
+
+    // Wrap around logic
+    if (nextPosition!.dx >= upperBoundX) {
+      nextPosition = Offset(lowerBoundX.toDouble(), nextPosition.dy);
+    } else if (nextPosition.dx < lowerBoundX) {
+      nextPosition = Offset(upperBoundX.toDouble(), nextPosition.dy);
+    }
+    if (nextPosition.dy >= upperBoundY) {
+      nextPosition = Offset(nextPosition.dx, lowerBoundY.toDouble());
+    } else if (nextPosition.dy < lowerBoundY) {
+      nextPosition = Offset(nextPosition.dx, upperBoundY.toDouble());
+    }
+
+    return nextPosition;
   }
 
   Offset getRandomPositionWithinRange() {
     int posX = Random().nextInt(upperBoundX) + lowerBoundX;
     int posY = Random().nextInt(upperBoundY) + lowerBoundY;
-    return Offset(roundToNearestTens(posX).toDouble(),
-        roundToNearestTens(posY).toDouble());
-  }
-
-  bool detectCollision(Offset position) {
-    if (position.dx >= upperBoundX && direction == Direction.right) {
-      return true;
-    } else if (position.dx <= lowerBoundX && direction == Direction.left) {
-      return true;
-    } else if (position.dy >= upperBoundY && direction == Direction.down) {
-      return true;
-    } else if (position.dy <= lowerBoundY && direction == Direction.up) {
-      return true;
-    }
-
-    return false;
+    return Offset(roundToNearestTens(posX).toDouble(), roundToNearestTens(posY).toDouble());
   }
 
   void showGameOverDialog() {
@@ -106,37 +123,13 @@ class _GamePageState extends State<GamePage> {
               },
               child: Text(
                 "Restart",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ],
         );
       },
     );
-  }
-
-  Future<Offset> getNextPosition(Offset position) async {
-    Offset? nextPosition;
-
-    if (detectCollision(position) == true) {
-      if (timer != null && timer!.isActive) timer!.cancel();
-      await Future.delayed(
-          Duration(milliseconds: 500), () => showGameOverDialog());
-      return position;
-    }
-
-    if (direction == Direction.right) {
-      nextPosition = Offset(position.dx + step, position.dy);
-    } else if (direction == Direction.left) {
-      nextPosition = Offset(position.dx - step, position.dy);
-    } else if (direction == Direction.up) {
-      nextPosition = Offset(position.dx, position.dy - step);
-    } else if (direction == Direction.down) {
-      nextPosition = Offset(position.dx, position.dy + step);
-    }
-
-    return nextPosition!;
   }
 
   void drawFood() {
@@ -146,8 +139,8 @@ class _GamePageState extends State<GamePage> {
 
     if (foodPosition == positions[0]) {
       length++;
-      speed = speed + 0.25;
-      score = score + 5;
+      speed += 0.25;
+      score += 5;
       changeSpeed();
 
       foodPosition = getRandomPositionWithinRange();
@@ -186,10 +179,8 @@ class _GamePageState extends State<GamePage> {
 
   Widget getControls() {
     return ControlPanel(
-      // 1
       onTapped: (Direction newDirection) {
-        // 2
-        direction = newDirection; // 3
+        direction = newDirection;
       },
     );
   }
@@ -210,6 +201,20 @@ class _GamePageState extends State<GamePage> {
       setState(() {});
     });
   }
+
+  Direction getRandomDirection([DirectionType? type]) {
+    if (type == DirectionType.horizontal) {
+      bool random = Random().nextBool();
+      return random ? Direction.right : Direction.left;
+    } else if (type == DirectionType.vertical) {
+      bool random = Random().nextBool();
+      return random ? Direction.up : Direction.down;
+    } else {
+      int random = Random().nextInt(4);
+      return Direction.values[random];
+    }
+  }
+
 
   Widget getScore() {
     return Positioned(
