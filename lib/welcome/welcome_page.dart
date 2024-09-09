@@ -78,7 +78,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             ),
           ),
 
-          // Frosted Glass Effect with title and button
+          // Frosted Glass Effect with title and buttons
           Center(
             child: FrostedGlassEffect(
               child: Column(
@@ -95,28 +95,97 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ),
                   ),
                   SizedBox(height: 40),
+
+                  // Easy Button
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding:
                           EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                       textStyle:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                          backgroundColor: const Color.fromARGB(67, 244, 67, 54),
+                      backgroundColor: Colors.green.withOpacity(0.3),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(40),
                       ),
                     ),
                     onPressed: () {
+                      // Pass the difficulty level "easy"
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => GamePage()),
+                        MaterialPageRoute(
+                          builder: (context) => GamePage(difficulty: 'easy'),
+                        ),
                       );
                     },
                     child: Text(
-                      "Start Game",
+                      "Easy",
                       style: TextStyle(
                         fontFamily: 'PixelFont',
                         color: Colors.green,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // Medium Button
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                      textStyle:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      backgroundColor: Colors.orange.withOpacity(0.3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                    ),
+                    onPressed: () {
+                      // Pass the difficulty level "medium"
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GamePage(difficulty: 'medium'),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "Medium",
+                      style: TextStyle(
+                        fontFamily: 'PixelFont',
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // Hard Button
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                      textStyle:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      backgroundColor: Colors.red.withOpacity(0.3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                    ),
+                    onPressed: () {
+                      // Pass the difficulty level "hard"
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GamePage(difficulty: 'hard'),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "Hard",
+                      style: TextStyle(
+                        fontFamily: 'PixelFont',
+                        color: Colors.red,
                       ),
                     ),
                   ),

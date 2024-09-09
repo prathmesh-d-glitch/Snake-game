@@ -6,7 +6,10 @@ import 'direction.dart';
 import 'piece.dart';
 import 'control_panel.dart';
 
+// ignore: must_be_immutable
 class GamePage extends StatefulWidget {
+  String difficulty;
+  GamePage({required this.difficulty});
   @override
   _GamePageState createState() => _GamePageState();
 }
@@ -45,7 +48,8 @@ class _GamePageState extends State<GamePage> {
 
     if (detectSelfCollision()) {
       if (timer != null && timer!.isActive) timer!.cancel();
-      await Future.delayed(Duration(milliseconds: 500), () => showGameOverDialog());
+      await Future.delayed(
+          Duration(milliseconds: 500), () => showGameOverDialog());
     }
   }
 
@@ -90,7 +94,8 @@ class _GamePageState extends State<GamePage> {
   Offset getRandomPositionWithinRange() {
     int posX = Random().nextInt(upperBoundX) + lowerBoundX;
     int posY = Random().nextInt(upperBoundY) + lowerBoundY;
-    return Offset(roundToNearestTens(posX).toDouble(), roundToNearestTens(posY).toDouble());
+    return Offset(roundToNearestTens(posX).toDouble(),
+        roundToNearestTens(posY).toDouble());
   }
 
   void showGameOverDialog() {
@@ -123,7 +128,8 @@ class _GamePageState extends State<GamePage> {
               },
               child: Text(
                 "Restart",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -214,7 +220,6 @@ class _GamePageState extends State<GamePage> {
       return Direction.values[random];
     }
   }
-
 
   Widget getScore() {
     return Positioned(
