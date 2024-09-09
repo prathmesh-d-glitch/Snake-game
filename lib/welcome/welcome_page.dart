@@ -13,7 +13,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   List<Offset> snakePositions = [];
   final int snakeLength = 10;
   final double stepSize = 20.0;
+  int step = 20;
   late double screenWidth, screenHeight;
+  int? lowerBoundX, upperBoundX, lowerBoundY, upperBoundY;
 
   @override
   void initState() {
@@ -59,6 +61,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
+  int roundToNearestTens(int num) {
+    int divisor = step;
+    int output = (num ~/ divisor) * divisor;
+    if (output == 0) {
+      output += step;
+    }
+    return output;
+  }
+
   @override
   void dispose() {
     timer?.cancel();
@@ -67,6 +78,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    lowerBoundX = step;
+    lowerBoundY = step;
+    upperBoundX =
+        roundToNearestTens(MediaQuery.of(context).size.width.toInt() - step);
+    upperBoundY =
+        roundToNearestTens(MediaQuery.of(context).size.height.toInt() - step);
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -113,7 +130,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GamePage(difficulty: 'easy'),
+                          builder: (context) => GamePage(
+                            difficulty: 'easy',
+                            lowerBoundX: lowerBoundX!,
+                            lowerBoundY: lowerBoundY!,
+                            upperBoundX: upperBoundX!,
+                            upperBoundY: upperBoundY!,
+                          ),
                         ),
                       );
                     },
@@ -145,7 +168,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GamePage(difficulty: 'medium'),
+                          builder: (context) => GamePage(
+                            difficulty: 'medium',
+                            lowerBoundX: lowerBoundX!,
+                            lowerBoundY: lowerBoundY!,
+                            upperBoundX: upperBoundX!,
+                            upperBoundY: upperBoundY!,
+                          ),
                         ),
                       );
                     },
@@ -177,7 +206,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GamePage(difficulty: 'hard'),
+                          builder: (context) => GamePage(
+                            difficulty: 'hard',
+                            lowerBoundX: lowerBoundX!,
+                            lowerBoundY: lowerBoundY!,
+                            upperBoundX: upperBoundX!,
+                            upperBoundY: upperBoundY!,
+                          ),
                         ),
                       );
                     },
