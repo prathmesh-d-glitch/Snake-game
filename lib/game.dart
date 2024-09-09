@@ -6,10 +6,16 @@ import 'direction.dart';
 import 'piece.dart';
 import 'control_panel.dart';
 
-// ignore: must_be_immutable
 class GamePage extends StatefulWidget {
-  String difficulty;
-  GamePage({required this.difficulty});
+  final String difficulty;
+  final int lowerBoundX, upperBoundX, lowerBoundY, upperBoundY;
+  GamePage({
+    required this.difficulty,
+    required this.lowerBoundX,
+    required this.upperBoundX,
+    required this.lowerBoundY,
+    required this.upperBoundY,
+  });
   @override
   _GamePageState createState() => _GamePageState();
 }
@@ -25,12 +31,13 @@ class _GamePageState extends State<GamePage> {
 
   late double screenWidth;
   late double screenHeight;
-  late int lowerBoundX, upperBoundX, lowerBoundY, upperBoundY;
 
   Timer? timer;
   double speed = 1;
 
   int score = 0;
+  List<Offset> obstacles = [];
+  Timer? obstacleTimer;
 
   void draw() async {
     if (positions.isEmpty) {
@@ -43,10 +50,9 @@ class _GamePageState extends State<GamePage> {
       positions[i] = positions[i - 1];
     }
 
-    // Update snake's head position and check for self-collision
     positions[0] = await getNextPosition(positions[0]);
 
-    if (detectSelfCollision()) {
+    if (detectSelfCollision() || detectObstacleCollision()) {
       if (timer != null && timer!.isActive) timer!.cancel();
       await Future.delayed(
           Duration(milliseconds: 500), () => showGameOverDialog());
@@ -62,10 +68,18 @@ class _GamePageState extends State<GamePage> {
     return false;
   }
 
+  bool detectObstacleCollision() {
+    for (var obstacle in obstacles) {
+      if (obstacle == positions[0]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Offset getNextPosition(Offset position) {
     Offset? nextPosition;
 
-    // Move in the current direction
     if (direction == Direction.right) {
       nextPosition = Offset(position.dx + step, position.dy);
     } else if (direction == Direction.left) {
@@ -76,24 +90,32 @@ class _GamePageState extends State<GamePage> {
       nextPosition = Offset(position.dx, position.dy + step);
     }
 
-    // Wrap around logic
-    if (nextPosition!.dx >= upperBoundX) {
-      nextPosition = Offset(lowerBoundX.toDouble(), nextPosition.dy);
-    } else if (nextPosition.dx < lowerBoundX) {
-      nextPosition = Offset(upperBoundX.toDouble(), nextPosition.dy);
+    if (nextPosition!.dx >= widget.upperBoundX!) {
+      nextPosition = Offset(widget.lowerBoundX!.toDouble(), nextPosition.dy);
+    } else if (nextPosition.dx < widget.lowerBoundX!) {
+      nextPosition = Offset(widget.upperBoundX!.toDouble(), nextPosition.dy);
     }
-    if (nextPosition.dy >= upperBoundY) {
-      nextPosition = Offset(nextPosition.dx, lowerBoundY.toDouble());
-    } else if (nextPosition.dy < lowerBoundY) {
-      nextPosition = Offset(nextPosition.dx, upperBoundY.toDouble());
+    if (nextPosition.dy >= widget.upperBoundY!) {
+      nextPosition = Offset(nextPosition.dx, widget.lowerBoundY!.toDouble());
+    } else if (nextPosition.dy < widget.lowerBoundY!) {
+      nextPosition = Offset(nextPosition.dx, widget.upperBoundY!.toDouble());
     }
 
     return nextPosition;
   }
 
+  int roundToNearestTens(int num) {
+    int divisor = step;
+    int output = (num ~/ divisor) * divisor;
+    if (output == 0) {
+      output += step;
+    }
+    return output;
+  }
+
   Offset getRandomPositionWithinRange() {
-    int posX = Random().nextInt(upperBoundX) + lowerBoundX;
-    int posY = Random().nextInt(upperBoundY) + lowerBoundY;
+    int posX = Random().nextInt(widget.upperBoundX! - widget.lowerBoundX!) + widget.lowerBoundX!;
+    int posY = Random().nextInt(widget.upperBoundY! - widget.lowerBoundY!) + widget.lowerBoundY!;
     return Offset(roundToNearestTens(posX).toDouble(),
         roundToNearestTens(posY).toDouble());
   }
@@ -183,6 +205,21 @@ class _GamePageState extends State<GamePage> {
     return pieces;
   }
 
+  List<Piece> getObstacles() {
+    final obstaclePieces = <Piece>[];
+    for (var obstacle in obstacles) {
+      obstaclePieces.add(
+        Piece(
+          posX: obstacle.dx.toInt(),
+          posY: obstacle.dy.toInt(),
+          size: step,
+          color: Colors.grey,
+        ),
+      );
+    }
+    return obstaclePieces;
+  }
+
   Widget getControls() {
     return ControlPanel(
       onTapped: (Direction newDirection) {
@@ -191,14 +228,7 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  int roundToNearestTens(int num) {
-    int divisor = step;
-    int output = (num ~/ divisor) * divisor;
-    if (output == 0) {
-      output += step;
-    }
-    return output;
-  }
+  
 
   void changeSpeed() {
     if (timer != null && timer!.isActive) timer!.cancel();
@@ -206,6 +236,61 @@ class _GamePageState extends State<GamePage> {
     timer = Timer.periodic(Duration(milliseconds: 200 ~/ speed), (timer) {
       setState(() {});
     });
+  }
+
+  void changeObstaclePositions() {
+    setState(() {
+      obstacles = List.generate(5, (_) => getRandomPositionWithinRange());
+    });
+  }
+
+  void restart() {
+    score = 0;
+    length = 5;
+    positions = [];
+    direction = getRandomDirection();
+    speed = 1;
+
+    if (widget.difficulty == 'medium' || widget.difficulty == 'hard') {
+      obstacles = List.generate(5, (_) => getRandomPositionWithinRange());
+    }
+    if (widget.difficulty == 'hard') {
+      obstacleTimer = Timer.periodic(Duration(seconds: 5), (timer) {
+        changeObstaclePositions();
+      });
+    }
+
+    changeSpeed();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    restart();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: const Color.fromARGB(255, 0, 0, 0),
+        child: Stack(
+          children: [
+            getPlayAreaBorder(),
+            Stack(
+              children: getPieces(),
+            ),
+            if (widget.difficulty != 'easy')
+              Stack(
+                children: getObstacles(),
+              ),
+            getControls(),
+            food,
+            getScore(),
+          ],
+        ),
+      ),
+    );
   }
 
   Direction getRandomDirection([DirectionType? type]) {
@@ -227,66 +312,24 @@ class _GamePageState extends State<GamePage> {
       right: 40.0,
       child: Text(
         "Score: " + score.toString(),
-        style: TextStyle(fontSize: 24.0),
+        style: const TextStyle(fontSize: 24.0, color: Colors.white),
       ),
     );
   }
 
-  void restart() {
-    score = 0;
-    length = 5;
-    positions = [];
-    direction = getRandomDirection();
-    speed = 1;
-
-    changeSpeed();
-  }
-
   Widget getPlayAreaBorder() {
     return Positioned(
-      top: lowerBoundY.toDouble(),
-      left: lowerBoundX.toDouble(),
+      top: widget.lowerBoundY!.toDouble(),
+      left: widget.lowerBoundX!.toDouble(),
       child: Container(
-        width: (upperBoundX - lowerBoundX + step).toDouble(),
-        height: (upperBoundY - lowerBoundY + step).toDouble(),
+        width: (widget.upperBoundX! - widget.lowerBoundX! + step).toDouble(),
+        height: (widget.upperBoundY! - widget.lowerBoundY! + step).toDouble(),
         decoration: BoxDecoration(
           border: Border.all(
             color: Colors.black.withOpacity(0.2),
             style: BorderStyle.solid,
             width: 1.0,
           ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    restart();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    lowerBoundX = step;
-    lowerBoundY = step;
-    upperBoundX =
-        roundToNearestTens(MediaQuery.of(context).size.width.toInt() - step);
-    upperBoundY =
-        roundToNearestTens(MediaQuery.of(context).size.height.toInt() - step);
-    return Scaffold(
-      body: Container(
-        color: Color.fromARGB(255, 0, 0, 0),
-        child: Stack(
-          children: [
-            getPlayAreaBorder(),
-            Stack(
-              children: getPieces(),
-            ),
-            getControls(),
-            food,
-            getScore(),
-          ],
         ),
       ),
     );
