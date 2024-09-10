@@ -376,7 +376,7 @@ class _GamePageState extends State<GamePage> {
       right: 40.0,
       child: Text(
         "Score: " + score.toString(),
-        style: const TextStyle(fontSize: 24.0, color: Colors.white),
+        style: const TextStyle(fontSize: 24.0, fontFamily: 'PixelFont', color: Colors.white),
       ),
     );
   }
