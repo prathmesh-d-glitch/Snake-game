@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'control_button.dart';
 import 'direction.dart';
 
 class ControlPanel extends StatelessWidget {
@@ -9,65 +8,30 @@ class ControlPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: 0.0,
-      right: 0.0,
-      bottom: 50.0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(),
-                ),
-                ControlButton(
-                  icon: Icon(Icons.arrow_left),
-                  onPressed: () {
-                    if (onTapped != null) onTapped!(Direction.left);
-                  },
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Column(
-              children: [
-                ControlButton(
-                  icon: Icon(Icons.arrow_drop_up_sharp),
-                  onPressed: () {
-                    if (onTapped != null) onTapped!(Direction.up);
-                  },
-                ),
-                SizedBox(
-                  height: 75.0,
-                ),
-                ControlButton(
-                  icon: Icon(Icons.arrow_drop_down_sharp),
-                  onPressed: () {
-                    if (onTapped != null) onTapped!(Direction.down);
-                  },
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Row(
-              children: [
-                ControlButton(
-                  icon: Icon(Icons.arrow_right),
-                  onPressed: () {
-                    if (onTapped != null) onTapped!(Direction.right);
-                  },
-                ),
-                Expanded(
-                  child: Container(),
-                ),
-              ],
-            ),
-          ),
-        ],
+    return GestureDetector(
+      onHorizontalDragUpdate: (details) {
+        if (details.delta.dx > 0) {
+          // Swipe Right
+          if (onTapped != null) onTapped!(Direction.right);
+        } else if (details.delta.dx < 0) {
+          // Swipe Left
+          if (onTapped != null) onTapped!(Direction.left);
+        }
+      },
+      onVerticalDragUpdate: (details) {
+        if (details.delta.dy > 0) {
+          // Swipe Down
+          if (onTapped != null) onTapped!(Direction.down);
+        } else if (details.delta.dy < 0) {
+          // Swipe Up
+          if (onTapped != null) onTapped!(Direction.up);
+        }
+      },
+      child: Container(
+        color: Colors.transparent, // Full screen swipeable area
+        child: Center(
+          child: null,
+        ),
       ),
     );
   }
