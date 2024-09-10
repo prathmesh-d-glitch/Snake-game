@@ -36,7 +36,7 @@ class _GamePageState extends State<GamePage> {
   double speed = 1;
 
   int score = 0;
-  List<Offset> obstacles = [];
+  List<List<Offset>> obstacles = []; // Updated to handle 2x2 obstacles
   Timer? obstacleTimer;
 
   void draw() async {
@@ -70,7 +70,7 @@ class _GamePageState extends State<GamePage> {
 
   bool detectObstacleCollision() {
     for (var obstacle in obstacles) {
-      if (obstacle == positions[0]) {
+      if (obstacle.contains(positions[0])) {
         return true;
       }
     }
@@ -90,15 +90,15 @@ class _GamePageState extends State<GamePage> {
       nextPosition = Offset(position.dx, position.dy + step);
     }
 
-    if (nextPosition!.dx >= widget.upperBoundX!) {
-      nextPosition = Offset(widget.lowerBoundX!.toDouble(), nextPosition.dy);
-    } else if (nextPosition.dx < widget.lowerBoundX!) {
-      nextPosition = Offset(widget.upperBoundX!.toDouble(), nextPosition.dy);
+    if (nextPosition!.dx >= widget.upperBoundX) {
+      nextPosition = Offset(widget.lowerBoundX.toDouble(), nextPosition.dy);
+    } else if (nextPosition.dx < widget.lowerBoundX) {
+      nextPosition = Offset(widget.upperBoundX.toDouble(), nextPosition.dy);
     }
-    if (nextPosition.dy >= widget.upperBoundY!) {
-      nextPosition = Offset(nextPosition.dx, widget.lowerBoundY!.toDouble());
-    } else if (nextPosition.dy < widget.lowerBoundY!) {
-      nextPosition = Offset(nextPosition.dx, widget.upperBoundY!.toDouble());
+    if (nextPosition.dy >= widget.upperBoundY) {
+      nextPosition = Offset(nextPosition.dx, widget.lowerBoundY.toDouble());
+    } else if (nextPosition.dy < widget.lowerBoundY) {
+      nextPosition = Offset(nextPosition.dx, widget.upperBoundY.toDouble());
     }
 
     return nextPosition;
@@ -114,8 +114,8 @@ class _GamePageState extends State<GamePage> {
   }
 
   Offset getRandomPositionWithinRange() {
-    int posX = Random().nextInt(widget.upperBoundX! - widget.lowerBoundX!) + widget.lowerBoundX!;
-    int posY = Random().nextInt(widget.upperBoundY! - widget.lowerBoundY!) + widget.lowerBoundY!;
+    int posX = Random().nextInt(widget.upperBoundX - widget.lowerBoundX) + widget.lowerBoundX;
+    int posY = Random().nextInt(widget.upperBoundY - widget.lowerBoundY) + widget.lowerBoundY;
     return Offset(roundToNearestTens(posX).toDouble(),
         roundToNearestTens(posY).toDouble());
   }
@@ -161,7 +161,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   void drawFood() {
-    if (foodPosition == null) {
+    if (foodPosition == null || detectFoodOnObstacle()) {
       foodPosition = getRandomPositionWithinRange();
     }
 
@@ -181,6 +181,15 @@ class _GamePageState extends State<GamePage> {
       color: const Color.fromARGB(255, 191, 32, 20),
       isAnimated: true,
     );
+  }
+
+  bool detectFoodOnObstacle() {
+    for (var obstacle in obstacles) {
+      if (obstacle.contains(foodPosition)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   List<Piece> getPieces() {
@@ -208,14 +217,16 @@ class _GamePageState extends State<GamePage> {
   List<Piece> getObstacles() {
     final obstaclePieces = <Piece>[];
     for (var obstacle in obstacles) {
-      obstaclePieces.add(
-        Piece(
-          posX: obstacle.dx.toInt(),
-          posY: obstacle.dy.toInt(),
-          size: step,
-          color: Colors.grey,
-        ),
-      );
+      for (var offset in obstacle) {
+        obstaclePieces.add(
+          Piece(
+            posX: offset.dx.toInt(),
+            posY: offset.dy.toInt(),
+            size: step,
+            color: Colors.grey,
+          ),
+        );
+      }
     }
     return obstaclePieces;
   }
@@ -228,8 +239,6 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  
-
   void changeSpeed() {
     if (timer != null && timer!.isActive) timer!.cancel();
 
@@ -240,7 +249,15 @@ class _GamePageState extends State<GamePage> {
 
   void changeObstaclePositions() {
     setState(() {
-      obstacles = List.generate(5, (_) => getRandomPositionWithinRange());
+      obstacles = List.generate(5, (_) {
+        final basePosition = getRandomPositionWithinRange();
+        return [
+          basePosition,
+          basePosition.translate(step.toDouble(), 0),
+          basePosition.translate(0, step.toDouble()),
+          basePosition.translate(step.toDouble(), step.toDouble()),
+        ];
+      });
     });
   }
 
@@ -252,7 +269,7 @@ class _GamePageState extends State<GamePage> {
     speed = 1;
 
     if (widget.difficulty == 'medium' || widget.difficulty == 'hard') {
-      obstacles = List.generate(5, (_) => getRandomPositionWithinRange());
+      changeObstaclePositions();
     }
     if (widget.difficulty == 'hard') {
       obstacleTimer = Timer.periodic(Duration(seconds: 5), (timer) {
@@ -276,7 +293,6 @@ class _GamePageState extends State<GamePage> {
         color: const Color.fromARGB(255, 0, 0, 0),
         child: Stack(
           children: [
-            getPlayAreaBorder(),
             Stack(
               children: getPieces(),
             ),
@@ -313,24 +329,6 @@ class _GamePageState extends State<GamePage> {
       child: Text(
         "Score: " + score.toString(),
         style: const TextStyle(fontSize: 24.0, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget getPlayAreaBorder() {
-    return Positioned(
-      top: widget.lowerBoundY!.toDouble(),
-      left: widget.lowerBoundX!.toDouble(),
-      child: Container(
-        width: (widget.upperBoundX! - widget.lowerBoundX! + step).toDouble(),
-        height: (widget.upperBoundY! - widget.lowerBoundY! + step).toDouble(),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.black.withOpacity(0.2),
-            style: BorderStyle.solid,
-            width: 1.0,
-          ),
-        ),
       ),
     );
   }
