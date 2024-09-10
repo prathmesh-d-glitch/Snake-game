@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_snake_game/direction_type.dart';
 import 'direction.dart';
@@ -39,7 +40,7 @@ class _GamePageState extends State<GamePage> {
   List<List<Offset>> obstacles = []; // Updated to handle 2x2 obstacles
   Timer? obstacleTimer;
 
-  void draw() async {
+  void draw(BuildContext context, Function restart) async {
     if (positions.isEmpty) {
       positions.add(getRandomPositionWithinRange());
     }
@@ -54,8 +55,8 @@ class _GamePageState extends State<GamePage> {
 
     if (detectSelfCollision() || detectObstacleCollision()) {
       if (timer != null && timer!.isActive) timer!.cancel();
-      await Future.delayed(
-          Duration(milliseconds: 500), () => showGameOverDialog());
+      await Future.delayed(Duration(milliseconds: 500),
+          () => showGameOverScreen(context, restart));
     }
   }
 
@@ -114,45 +115,92 @@ class _GamePageState extends State<GamePage> {
   }
 
   Offset getRandomPositionWithinRange() {
-    int posX = Random().nextInt(widget.upperBoundX - widget.lowerBoundX) + widget.lowerBoundX;
-    int posY = Random().nextInt(widget.upperBoundY - widget.lowerBoundY) + widget.lowerBoundY;
+    int posX = Random().nextInt(widget.upperBoundX - widget.lowerBoundX) +
+        widget.lowerBoundX;
+    int posY = Random().nextInt(widget.upperBoundY - widget.lowerBoundY) +
+        widget.lowerBoundY;
     return Offset(roundToNearestTens(posX).toDouble(),
         roundToNearestTens(posY).toDouble());
   }
 
-  void showGameOverDialog() {
+  void showGameOverScreen(BuildContext context, Function onRestart) {
     showDialog(
       barrierDismissible: false,
       context: context,
       builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: Colors.red,
-          shape: RoundedRectangleBorder(
-            side: BorderSide(
-              color: Colors.black,
-              width: 3.0,
-            ),
-            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-          ),
-          title: Text(
-            "Game Over",
-            style: TextStyle(color: Colors.white),
-          ),
-          content: Text(
-            "Your game is over but you played well. Your score is $score.",
-            style: TextStyle(color: Colors.white),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                restart();
-              },
-              child: Text(
-                "Restart",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        return Stack(
+          children: [
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaY: 2),
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
               ),
+            ),
+            Center(
+              child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.4),
+                      width: 2,
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(30),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Gradient text for "Game Over"
+                      ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [
+                            const Color.fromARGB(255, 129, 5, 5),
+                            Colors.red
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ).createShader(bounds),
+                        child: Text(
+                          'Game Over',
+                          style: TextStyle(
+                            fontSize: 35,
+                            fontFamily: 'PixelFont',
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 2.0,
+                            decoration:
+                                TextDecoration.none, // Ensure no underline
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          onRestart();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 22,
+                            vertical: 10,
+                          ),
+                          backgroundColor: Colors.green.withOpacity(0.7),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        child: Text(
+                          'Restart',
+                          style: TextStyle(
+                            fontFamily: 'PixelFont',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )),
             ),
           ],
         );
@@ -192,9 +240,9 @@ class _GamePageState extends State<GamePage> {
     return false;
   }
 
-  List<Piece> getPieces() {
+  List<Piece> getPieces(BuildContext context, Function restart) {
     final pieces = <Piece>[];
-    draw();
+    draw(context, restart);
     drawFood();
 
     for (var i = 0; i < length; i++) {
@@ -294,7 +342,7 @@ class _GamePageState extends State<GamePage> {
         child: Stack(
           children: [
             Stack(
-              children: getPieces(),
+              children: getPieces(context, restart),
             ),
             if (widget.difficulty != 'easy')
               Stack(
