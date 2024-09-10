@@ -18,33 +18,37 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   int? lowerBoundX, upperBoundX, lowerBoundY, upperBoundY;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future.delayed(Duration(milliseconds: 50), () {
       initSnake();
     });
-  }
+  });
+}
+
 
   void initSnake() {
-    // Initialize the snake positions to move at the bottom
-    screenWidth = MediaQuery.of(context).size.width;
-    screenHeight = MediaQuery.of(context).size.height;
+  // Ensure correct screen dimensions
+  screenWidth = MediaQuery.of(context).size.width;
+  screenHeight = MediaQuery.of(context).size.height;
+  
+  print("Screen width: $screenWidth, height: $screenHeight");
 
-    double startX = 0;
-    double startY =
-        screenHeight - stepSize * 2; // Near the bottom of the screen
+  double startX = 0;
+  double startY = screenHeight - stepSize * 2; // Near the bottom of the screen
 
-    for (int i = 0; i < snakeLength; i++) {
-      snakePositions.add(Offset(startX - (i * stepSize), startY));
-    }
-
-    // Timer to animate the snake
-    timer = Timer.periodic(Duration(milliseconds: 150), (Timer timer) {
-      setState(() {
-        moveSnake();
-      });
-    });
+  for (int i = 0; i < snakeLength; i++) {
+    snakePositions.add(Offset(startX - (i * stepSize), startY));
   }
+
+  timer = Timer.periodic(Duration(milliseconds: 150), (Timer timer) {
+    setState(() {
+      moveSnake();
+    });
+  });
+}
+
 
   void moveSnake() {
     for (int i = snakePositions.length - 1; i > 0; i--) {
