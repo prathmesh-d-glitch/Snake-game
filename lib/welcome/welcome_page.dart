@@ -109,7 +109,7 @@ void initState() {
                     "Snake Game",
                     style: TextStyle(
                       color: Colors.green,
-                      fontSize: 48,
+                      fontSize: 50,
                       fontFamily: 'PixelFont',
                       fontWeight: FontWeight.bold,
                       letterSpacing: 4.0,
