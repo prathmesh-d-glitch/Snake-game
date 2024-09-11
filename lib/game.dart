@@ -163,7 +163,7 @@ class _GamePageState extends State<GamePage> {
                         child: Text(
                           'Game Over',
                           style: TextStyle(
-                            fontSize: 35,
+                            fontSize: 50,
                             fontFamily: 'PixelFont',
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -373,7 +373,7 @@ class _GamePageState extends State<GamePage> {
   Widget getScore() {
     return Positioned(
       top: 50.0,
-      right: 40.0,
+      left: 153.0,
       child: Text(
         "Score: " + score.toString(),
         style: const TextStyle(fontSize: 24.0, fontFamily: 'PixelFont', color: Colors.white),
