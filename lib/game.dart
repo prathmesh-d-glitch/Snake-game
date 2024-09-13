@@ -42,7 +42,7 @@ class _GamePageState extends State<GamePage> {
   double speed = 1;
 
   int score = 0;
-  List<List<Offset>> obstacles = []; // Updated to handle 2x2 obstacles
+  List<List<Offset>> obstacles = []; 
   Timer? obstacleTimer;
 
   void draw(BuildContext context, Function restart) async {
@@ -136,8 +136,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   void showGameOverScreen(BuildContext context, Function onRestart) {
-    _audioPlayerg.seek(Duration.zero);
-    _audioPlayerg.play();
+    playAudio(_audioPlayerg);
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -232,8 +231,7 @@ class _GamePageState extends State<GamePage> {
       speed += 0.25;
       score += 5;
       changeSpeed();
-      _audioPlayerf.seek(Duration.zero);
-      _audioPlayerf.play();
+      playAudio(_audioPlayerf);
       foodPosition = getRandomPositionWithinRange();
     }
 
@@ -351,9 +349,19 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<void> loadAudio() async {
-    await _audioPlayerf.setAsset('assets/audio/food.mp3');
-    await _audioPlayerg.setAsset('assets/audio/game_over.mp3');
-  }
+  // Preload both audio files at once and cache them
+  await Future.wait([
+    _audioPlayerf.setAsset('assets/audio/food.mp3'),
+    _audioPlayerg.setAsset('assets/audio/game_over.mp3'),
+  ]);
+}
+
+void playAudio(AudioPlayer player) {
+  // Play audio without reloading assets if already loaded
+  player.seek(Duration.zero);
+  player.play();
+}
+
 
   // void playFoodMusic() {
   //   if (foodEaten) {
