@@ -3,12 +3,13 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_snake_game/direction_type.dart';
+import 'package:just_audio/just_audio.dart';
 import 'direction.dart';
 import 'piece.dart';
 import 'control_panel.dart';
 
 class GamePage extends StatefulWidget {
-  final String difficulty;
+  final String difficulty;  
   final int lowerBoundX, upperBoundX, lowerBoundY, upperBoundY;
   GamePage({
     required this.difficulty,
@@ -25,7 +26,11 @@ class _GamePageState extends State<GamePage> {
   List<Offset> positions = [];
   int length = 5;
   int step = 20;
+  final AudioPlayer _audioPlayerf = AudioPlayer();
+  final AudioPlayer _audioPlayerg = AudioPlayer();
   Direction direction = Direction.right;
+  // bool foodEaten = false;
+  // bool gameOver = false;
 
   late Piece food;
   Offset? foodPosition;
@@ -123,7 +128,16 @@ class _GamePageState extends State<GamePage> {
         roundToNearestTens(posY).toDouble());
   }
 
+  @override
+  void dispose() {
+    _audioPlayerf.dispose();
+    _audioPlayerg.dispose();
+    super.dispose();
+  }
+
   void showGameOverScreen(BuildContext context, Function onRestart) {
+    _audioPlayerg.seek(Duration.zero);
+    _audioPlayerg.play();
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -218,7 +232,8 @@ class _GamePageState extends State<GamePage> {
       speed += 0.25;
       score += 5;
       changeSpeed();
-
+      _audioPlayerf.seek(Duration.zero);
+      _audioPlayerf.play();
       foodPosition = getRandomPositionWithinRange();
     }
 
@@ -331,8 +346,30 @@ class _GamePageState extends State<GamePage> {
   @override
   void initState() {
     super.initState();
+    loadAudio();
     restart();
   }
+
+  Future<void> loadAudio() async {
+    await _audioPlayerf.setAsset('assets/audio/food.mp3');
+    await _audioPlayerg.setAsset('assets/audio/game_over.mp3');
+  }
+
+  // void playFoodMusic() {
+  //   if (foodEaten) {
+  //     _audioPlayerf.play();
+  //   } else {
+  //     _audioPlayerf.pause();
+  //   }
+  // }
+
+  // void playGameOverMusic() {
+  //   if (gameOver) {
+  //     _audioPlayerg.play();
+  //   } else {
+  //     _audioPlayerg.pause();
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -373,7 +410,7 @@ class _GamePageState extends State<GamePage> {
   Widget getScore() {
     return Positioned(
       top: 50.0,
-      left: 153.0,
+      left: 20.0,
       child: Text(
         "Score: " + score.toString(),
         style: const TextStyle(fontSize: 24.0, fontFamily: 'PixelFont', color: Colors.white),
