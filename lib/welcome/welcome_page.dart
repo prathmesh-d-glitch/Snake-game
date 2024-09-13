@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_snake_game/game.dart';
+import 'package:just_audio/just_audio.dart';
+
 
 class WelcomeScreen extends StatefulWidget {
   @override
@@ -11,21 +13,38 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   Timer? timer;
   List<Offset> snakePositions = [];
+  final AudioPlayer _audioPlayer = AudioPlayer();
   final int snakeLength = 10;
   final double stepSize = 20.0;
   int step = 20;
+  bool _playMusic = true; 
   late double screenWidth, screenHeight;
   int? lowerBoundX, upperBoundX, lowerBoundY, upperBoundY;
 
   @override
 void initState() {
   super.initState();
+  _loadAudio();
+  playMusic();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     Future.delayed(Duration(milliseconds: 50), () {
       initSnake();
     });
   });
 }
+
+Future<void> _loadAudio() async {
+    await _audioPlayer.setAsset('assets/audio/snake_game_bg.mp3');
+    _audioPlayer.setLoopMode(LoopMode.one);
+  }
+
+  void playMusic() {
+    if (_playMusic) {
+      _audioPlayer.play();
+    } else {
+      _audioPlayer.pause();
+    }
+  }
 
 
   void initSnake() {
@@ -77,6 +96,7 @@ void initState() {
   @override
   void dispose() {
     timer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -116,7 +136,6 @@ void initState() {
                     ),
                   ),
                   SizedBox(height: 40),
-
                   // Easy Button
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -131,6 +150,10 @@ void initState() {
                     ),
                     onPressed: () {
                       // Pass the difficulty level "easy"
+                      setState(() {
+                        _playMusic=!_playMusic;
+                        playMusic();
+                      });
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -169,6 +192,10 @@ void initState() {
                     ),
                     onPressed: () {
                       // Pass the difficulty level "medium"
+                      setState(() {
+                        _playMusic=!_playMusic;
+                        playMusic();
+                      });
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -207,6 +234,10 @@ void initState() {
                     ),
                     onPressed: () {
                       // Pass the difficulty level "hard"
+                      setState(() {
+                        _playMusic=!_playMusic;
+                        playMusic();
+                      });
                       Navigator.push(
                         context,
                         MaterialPageRoute(
