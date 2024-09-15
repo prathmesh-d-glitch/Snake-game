@@ -8,6 +8,7 @@ A modern twist on the classic Snake Game, built with Flutter! This game provides
 - **Responsive Design**: The UI is fully responsive across all screen sizes.
 - **Minimalist UI**: Clean, simple layout focusing on gameplay without distractions.
 - **Dynamic Speed**: Snake speed increases as the game progresses, adding a fun challenge.
+- **Sound Effects**: Added sound effects for game over, food consumption, and a background theme to enhance the overall experience.
 
 ## 🎮 Game Controls
 
@@ -28,6 +29,12 @@ The control area covers the full screen, allowing you to swipe anywhere to contr
 
 If the snake collides with itself or the boundaries of the screen, the game will end. A restart button will appear to start the game over from the beginning.
 
+### Sound Effects
+
+- **Game Over Sound**: Plays when the snake collides with itself or the screen boundary.
+- **Food Consumption Sound**: Plays whenever the snake eats food.
+- **Background Theme**: A looping theme sound plays in the background during gameplay to add to the immersive experience.
+
 ## 🖼️ Screenshots
 
 <p align="center">
@@ -36,7 +43,6 @@ If the snake collides with itself or the boundaries of the screen, the game will
   <img src="https://github.com/user-attachments/assets/948cc7b1-b882-4b9a-9bd0-b72879d3bda1" alt="Screenshot 3" width="200"/>
   <img src="https://github.com/user-attachments/assets/9c6bc4cd-9e76-4b8a-98ab-6e38cd13b1c8" alt="Screenshot 4" width="200"/>
 </p>
-
 
 ## 🤝 Contributions
 
@@ -50,7 +56,6 @@ Feel free to fork this project and submit your pull requests! Contributions are 
 4. Commit your changes (`git commit -m 'Add your feature'`)
 5. Push to the branch (`git push origin feature/your-feature`)
 6. Open a pull request
-
 
 ## 💡 Inspiration
 
